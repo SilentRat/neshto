@@ -1,0 +1,111 @@
+public partial class MainApp : Form
+	{
+		int editedID;
+		Commands command = new Commands();
+		public MainApp()
+		{
+			InitializeComponent();
+		}
+
+		private void MainApp_Load(object sender, EventArgs e)
+		{
+			UpdateGrid();
+			ClearTextBoxes();
+		}
+		private void UpdateGrid()
+		{
+			dataGridView.DataSource = command.ShowAll();
+			dataGridView.ReadOnly = true;
+			dataGridView.SelectionMode=DataGridViewSelectionMode.FullRowSelect;
+		}
+		private void ClearTextBoxes()
+		{
+			textBoxName.Text = null;
+			textBoxPrice.Text = null;
+			textBoxAmount.Text = null;
+		}
+
+		private void buttonAdd_Click(object sender, EventArgs e)
+		{
+			var name = textBoxName.Text;
+			decimal price = decimal.Parse(textBoxPrice.Text);
+			int amount=int.Parse(textBoxAmount.Text);
+			Product product = new Product();
+			product.Name = name;
+			product.Price = price;
+			product.Amount= amount;
+			command.Add(product);
+			UpdateGrid();
+			ClearTextBoxes();
+		}
+
+		private void buttonUpdate_Click(object sender, EventArgs e)
+		{
+			if (dataGridView.SelectedRows.Count>0)
+			{
+				var item = dataGridView.SelectedRows[0].Cells;
+				var id = int.Parse(item[0].Value.ToString());
+				editedID = id;
+				UpdateTextBoxes(id);
+				ToggleSaveButton();
+				DisableSelect();
+			}
+		}
+		private void buttonSave_Click(object sender, EventArgs e)
+		{
+			Product editedProduct=GetEditedProduct();
+			command.Update(editedProduct);
+			UpdateGrid();
+			ResetSelect();
+			ToggleSaveButton();
+		}
+		private void buttonDelete_Click(object sender, EventArgs e)
+		{
+			if (dataGridView.SelectedRows.Count>0)
+			{
+				var item = dataGridView.SelectedRows[0].Cells;
+				var id = int.Parse(item[0].Value.ToString());
+				command.Delete(id);
+				UpdateGrid();
+				ResetSelect();
+			}
+		}
+		private void UpdateTextBoxes(int id)
+		{
+			Product product=command.ShowOne(id);
+			textBoxName.Text = product.Name;
+			textBoxPrice.Text = product.Price.ToString();
+			textBoxAmount.Text = product.Amount.ToString();
+		}
+		private void ToggleSaveButton()
+		{
+			if (buttonUpdate.Visible)
+			{
+				buttonSave.Visible = true;
+				buttonUpdate.Visible = false;
+			}
+			else
+			{
+				buttonSave.Visible = false;
+				buttonUpdate.Visible = true;
+			}
+		}
+		private void DisableSelect()
+		{
+			dataGridView.Enabled = false;
+		}
+		private Product GetEditedProduct()
+		{
+			Product product = new Product();
+			product.ID=editedID;
+			product.Name=textBoxName.Text;
+			product.Price=decimal.Parse(textBoxPrice.Text);
+			product.Amount=int.Parse(textBoxAmount.Text);
+			return product;
+		}
+		private void ResetSelect()
+		{
+			dataGridView.ClearSelection();
+			dataGridView.Enabled = true;
+		}
+	}
